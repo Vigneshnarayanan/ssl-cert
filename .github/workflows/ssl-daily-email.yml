@@ -16,7 +16,7 @@ jobs:
 
       - name: Generate self-signed SSL certificate
         run: |
-          mkdir ssl
+          mkdir -p ssl
           openssl req -x509 -nodes -days 1 -newkey rsa:2048 \
           -keyout ssl/ssl-lab.key \
           -out ssl/ssl-lab.crt \
