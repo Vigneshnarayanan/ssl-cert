@@ -1,0 +1,41 @@
+name: Daily SSL Notification
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Every day at midnight UTC
+  workflow_dispatch:      # Allows manual trigger
+
+jobs:
+  ssl-notification:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout repository (pulls your SSL certs from GitHub)
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Step 2: Verify certificate exists
+      - name: List SSL files
+        run: |
+          ls -l ssl/
+
+      # Step 3: Upload SSL certificate artifact
+      - name: Upload SSL certificate artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ssl-cert
+          path: ssl/*.crt,ssl/*.key
+
+      # Step 4: Send email notification
+      - name: Send Email Notification
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.EMAIL_USER }}
+          password: ${{ secrets.EMAIL_PASS }}
+          subject: "✅ SSL certificate notification for ssl-lab.local"
+          body: |
+            The SSL certificate for ssl-lab.local is present in the repository.
+            Certificate expiry: $(openssl x509 -in ssl/ssl-lab.crt -noout -enddate)
+          to: ${{ secrets.EMAIL_TO }}
